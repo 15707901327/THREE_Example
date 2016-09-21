@@ -29,19 +29,6 @@
 				color: #ffffff;
 			}
 
-			#info {
-				position: absolute;
-				top: 0px;
-				width: 100%;
-				color: #ffffff;
-				padding: 5px;
-				font-family: Monospace;
-				font-size: 13px;
-				font-weight: bold;
-				text-align: center;
-				z-index: 1;
-			}
-
 			#menu {
 				position: absolute;
 				bottom: 20px;
@@ -62,13 +49,14 @@
 				z-index: 1;
 			}
 
+			/*屏幕左上方的按钮的三种状态*/
 			button {
-				color: rgb(255,255,255);
-				background: transparent;
-				border: 0px;
-				padding: 5px 10px;
-				cursor: pointer;
-			}
+				 color: rgb(255,255,255);
+				 background: transparent;
+				 border: 0px;
+				 padding: 5px 10px;
+				 cursor: pointer;
+			 }
 			button:hover {
 				background-color: rgba(0,255,255,0.5);
 			}
@@ -84,15 +72,14 @@
 				display: block;
 			}
 		</style>
+
+		<script src="../js/three/three.min.js"></script>
+		<script src="../js/controls/TrackballControls.js"></script>
+		<script src="../js/renderers/CSS3DRenderer.js"></script>
+		<script src="../js/loaders/PDBLoader.js"></script>
 	</head>
 	<body>
-		<script src="../build/three.min.js"></script>
-		<script src="js/controls/TrackballControls.js"></script>
-		<script src="js/renderers/CSS3DRenderer.js"></script>
-		<script src="js/loaders/PDBLoader.js"></script>
-
 		<div id="container"></div>
-		<div id="info"><a href="http://threejs.org" target="_blank">three.js css3d</a> - molecules</div>
 		<div id="topmenu">
 			<button id="b_a">Atoms</button>
 			<button id="b_b">Bonds</button>
@@ -105,6 +92,7 @@
 			var controls;
 			var root;
 
+			//生成端点的数据
 			var objects = [];
 			var tmpVec1 = new THREE.Vector3();
 			var tmpVec2 = new THREE.Vector3();
@@ -113,6 +101,7 @@
 
 			var visualizationType = 2;
 
+			//分子文件的路径
 			var MOLECULES = {
 				"Ethanol": "ethanol.pdb",
 				"Aspirin": "aspirin.pdb",
@@ -145,69 +134,59 @@
 
 			function init() {
 
+				//初始化相机
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 5000 );
 				camera.position.z = 1500;
 
+				//场景
 				scene = new THREE.Scene();
 
+				//向场景中添加一个对象组
 				root = new THREE.Object3D();
 				scene.add( root );
 
-				//
-
+				//兴建并添加CSS3DRenderer渲染器
 				renderer = new THREE.CSS3DRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				document.getElementById( 'container' ).appendChild( renderer.domElement );
 
-				//
-
+				//添加控制
 				controls = new THREE.TrackballControls( camera, renderer.domElement );
 				controls.rotateSpeed = 0.5;
 				controls.addEventListener( 'change', render );
 
-				//
-
+				//当前图片加载完成后执行
 				baseSprite.onload = function () {
-
-					loadMolecule( "models/molecules/caffeine.pdb" );
+					loadMolecule( "../models/molecules/caffeine.pdb" );
 					createMenu();
-
 				};
 
-				baseSprite.src = 'textures/sprites/ball.png';
-
+				baseSprite.src = '../img/textures/sprites/ball.png';
 				//
-
 				window.addEventListener( 'resize', onWindowResize, false );
-
 			}
 
 			//
-
 			function generateButtonCallback( url ) {
-
 				return function ( event ) {
-
 					loadMolecule( url );
-
 				}
-
 			}
 
 			function createMenu() {
 
+				/**添加页面下面的button，并添加点击事件**/
 				for ( var m in MOLECULES ) {
-
 					var button = document.createElement( 'button' );
 					button.innerHTML = m;
 					menu.appendChild( button );
 
-					var url = "models/molecules/" +  MOLECULES[ m ];
+					var url = "../models/molecules/" +  MOLECULES[ m ];
 
 					button.addEventListener( 'click', generateButtonCallback( url ), false );
-
 				}
 
+				/**给页面中隐藏显示按钮的事件**/
 				var b_a = document.getElementById( "b_a" );
 				var b_b = document.getElementById( "b_b" );
 				var b_ab = document.getElementById( "b_ab" );
@@ -215,112 +194,84 @@
 				b_a.addEventListener( 'click', function() { visualizationType = 0; showAtoms() } );
 				b_b.addEventListener( 'click', function() { visualizationType = 1; showBonds() } );
 				b_ab.addEventListener( 'click', function() { visualizationType = 2; showAtomsBonds() } );
-
 			}
 
 			//
-
 			function showAtoms() {
 
 				for ( var i = 0; i < objects.length; i ++ ) {
-
 					var object = objects[ i ];
-
 					if ( object instanceof THREE.CSS3DSprite ) {
-
 						object.element.style.display = "";
 						object.visible = true;
-
 					} else {
-
 						object.element.style.display = "none";
 						object.visible = false;
-
 					}
-
 				}
 
 			}
-
 			function showBonds() {
 
 				for ( var i = 0; i < objects.length; i ++ ) {
-
 					var object = objects[ i ];
-
 					if ( object instanceof THREE.CSS3DSprite ) {
-
 						object.element.style.display = "none";
 						object.visible = false;
-
 					} else {
-
 						object.element.style.display = "";
 						object.element.style.height = object.userData.bondLengthFull;
 						object.visible = true;
-
 					}
-
 				}
-
 			}
-
 			function showAtomsBonds() {
 
 				for ( var i = 0; i < objects.length; i ++ ) {
-
 					var object = objects[ i ];
-
 					object.element.style.display = "";
 					object.visible = true;
-
 					if ( ! ( object instanceof THREE.CSS3DSprite ) ) {
-
 						object.element.style.height = object.userData.bondLengthShort;
-
 					}
-
 				}
-
 			}
 
-			//
-
+			/**设置图片的颜色
+			 * ctx : canvas上下文**/
 			function colorify( ctx, width, height, color, a ) {
 
 				var r = color.r;
 				var g = color.g;
 				var b = color.b;
 
+				//获取图片数据
 				var imageData = ctx.getImageData( 0, 0, width, height );
 				var data = imageData.data;
 
+				//设置节点的颜色
 				for ( var y = 0; y < height; y ++ ) {
-
 					for ( var x = 0; x < width; x ++ ) {
-
 						var index = ( y * width + x ) * 4;
-
 						data[ index ]     *= r;
 						data[ index + 1 ] *= g;
 						data[ index + 2 ] *= b;
 						data[ index + 3 ] *= a;
-
 					}
-
 				}
-
 				ctx.putImageData( imageData, 0, 0 );
+			};
 
-			}
-
+			/**用img绘制一个canvas标签
+			 * image : img标签
+			 *
+			 * return : canvas **/
 			function imageToCanvas( image ) {
 
+				//设置canvas标签的大小和图片的大小一致
 				var width = image.width;
 				var height = image.height;
-
 				var canvas = document.createElement( 'canvas' );
-
 				canvas.width = width;
 				canvas.height = height;
 
@@ -328,27 +279,30 @@
 				context.drawImage( image, 0, 0, width, height );
 
 				return canvas;
-
 			}
 
-			//
-
+			//加载pdb文件
 			function loadMolecule( url ) {
 
+				//清空objects数组
 				for ( var i = 0; i < objects.length; i ++ ) {
-
 					var object = objects[ i ];
 					object.parent.remove( object );
-
 				}
-
 				objects = [];
 
+				/**
+				 * url ：pdb文件的路径
+				 * function ： 回调函数
+				 * 		geometry ：几何图形球
+				 * 		geometryBonds：几何图形链接横杠 **/
 				loader.load( url, function ( geometry, geometryBonds ) {
 
+					//获得图形中行点的坐标
 					var offset = geometry.center();
 					geometryBonds.translate( offset.x, offset.y, offset.z );
 
+					/* 添加端点 */
 					for ( var i = 0; i < geometry.vertices.length; i ++ ) {
 
 						var position = geometry.vertices[ i ];
@@ -360,15 +314,16 @@
 							var canvas = imageToCanvas( baseSprite );
 							var context = canvas.getContext( '2d' );
 
+							//设置节点的颜色
 							colorify( context, canvas.width, canvas.height, color, 1 );
 
+							//获得图片的数据
 							var dataUrl = canvas.toDataURL();
 
 							colorSpriteMap[ element ] = dataUrl;
-
 						}
 
-						colorSprite = colorSpriteMap[ element ];
+						var colorSprite = colorSpriteMap[ element ];
 
 						var atom = document.createElement( 'img' );
 						atom.src = colorSprite;
@@ -381,11 +336,10 @@
 						object.updateMatrix();
 
 						root.add( object );
-
 						objects.push( object );
-
 					}
 
+					/* 添加链接端点的横杠 */
 					for ( var i = 0; i < geometryBonds.vertices.length; i += 2 ) {
 
 						var start = geometryBonds.vertices[ i ];
@@ -394,11 +348,10 @@
 						start.multiplyScalar( 75 );
 						end.multiplyScalar( 75 );
 
+						//起始点到结束点的向量
 						tmpVec1.subVectors( end, start );
+						//起始点到结束点的长度
 						var bondLength = tmpVec1.length() - 50;
-
-
-						//
 
 						var bond = document.createElement( 'div' );
 						bond.className = "bond";
@@ -412,7 +365,6 @@
 						object.userData.bondLengthFull = ( bondLength + 55 ) + "px";
 
 						//
-
 						var axis = tmpVec2.set( 0, 1, 0 ).cross( tmpVec1 );
 						var radians = Math.acos( tmpVec3.set( 0, 1, 0 ).dot( tmpVec4.copy( tmpVec1 ).normalize() ) );
 
@@ -424,11 +376,9 @@
 						object.updateMatrix();
 
 						root.add( object );
-
 						objects.push( object );
 
 						//
-
 						var bond = document.createElement( 'div' );
 						bond.className = "bond";
 						bond.style.height = bondLength + "px";
@@ -464,22 +414,16 @@
 					//console.log( "CSS3DObjects:", objects.length );
 
 					switch ( visualizationType ) {
-
 						case 0: showAtoms(); break;
 						case 1: showBonds(); break;
 						case 2: showAtomsBonds(); break;
-
 					}
 
 					render();
-
 				} );
-
-
 			}
 
 			//
-
 			function onWindowResize() {
 
 				camera.aspect = window.innerWidth / window.innerHeight;
@@ -502,13 +446,10 @@
 				root.rotation.y = time * 0.7;
 
 				render();
-
 			}
 
 			function render() {
-
 				renderer.render( scene, camera );
-
 			}
 
     </script>
