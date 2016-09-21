@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Three框架</title>
+        <script src="three.js-master/build/three.js"></script>
+        <style type="text/css">
+            div#canvas-frame {
+                border: none;
+                cursor: pointer;
+                width: 100%;
+                height: 600px;
+                background-color: #EEEEEE;
+            }
+
+        </style>
+        <script>
+            var renderer;
+            function initThree() {
+                width = document.getElementById('canvas-frame').clientWidth;
+                height = document.getElementById('canvas-frame').clientHeight;
+                renderer = new THREE.WebGLRenderer({
+                    antialias : true
+                });
+                renderer.setSize(width, height);
+                document.getElementById('canvas-frame').appendChild(renderer.domElement);
+                renderer.setClearColor(0xFFFFFF, 1.0);
+            }
+
+            var camera;
+            function initCamera() {
+                camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+                camera.position.x = 600;
+                camera.position.y = 0;
+                camera.position.z = 600;
+                camera.up.x = 0;
+                camera.up.y = 1;
+                camera.up.z = 0;
+                camera.lookAt({
+                    x : 0,
+                    y : 0,
+                    z : 0
+                });
+            }
+
+            var scene;
+            function initScene() {
+                scene = new THREE.Scene();
+            }
+
+            var light;
+            function initLight() {
+                /*//环境光
+               light = new THREE.AmbientLight(0xFF0000);
+                light.position.set(100, 100, 200);
+                scene.add(light);*/
+
+
+                //平行光,方向光
+                // 第二个参数是光源强度，你可以改变它试一下
+                light = new THREE.DirectionalLight(0xFF0000,1);
+                // 位置不同，方向光作用于物体的面也不同，看到的物体各个面的颜色也不一样
+                light.position.set(1,0,0.5);
+                scene.add(light);
+
+
+
+                var spotLight = new THREE.SpotLight( 0xffffff);
+                /****************  设置光源基本属性  ***********************************************/
+                    //光源照射的原的大小
+                spotLight.angle = Math.PI / 3;
+                //光源的位置
+                spotLight.position.set( -100, 600, 0 );
+
+                //光源照射的最大距离
+                spotLight.distance = 2000;
+
+                //可以改变光源照射范围的线，但不会改变光源
+                //spotLight.lookAt({
+                //    x : 0,
+                //    y : 0,
+                //    z : 100
+                //});
+                //边缘模糊
+                //spotLight.penumbra = 0.5;
+                /****************  设置光源  ***********************************************/
+
+                /****************  设置物体阴影  *******************************************/
+                    //开启阴影
+                spotLight.castShadow = true;
+                //设置阴影中心,也是光照的中心
+                spotLight.target.position.set(0,0,0);
+                XML_D.init.initThree.scene.add( spotLight.target );
+
+                spotLight.shadowCameraNear = 1;
+                spotLight.shadowCameraFov = 90;
+                spotLight.shadowCameraFar = 200;
+                //spotLight.shadowBias = 0.0002;
+                //显示阴影
+                XML_D.init.initThree.scene.add( new THREE.CameraHelper( spotLight.shadow.camera ) );
+
+                /****************  设置物体阴影  ********************************************/
+
+                XML_D.init.initThree.scene.add( spotLight );
+
+                //var spotLightHelper = new THREE.SpotLightHelper( spotLight );
+                //XML_D.init.initThree.scene.add( spotLightHelper );
+            }
+
+            var cube;
+            function initObject() {
+                var geometry = new THREE.CubeGeometry( 200, 100, 50,4,4);
+                var material = new THREE.MeshLambertMaterial( { color:0xFFFFFF} );
+                var mesh = new THREE.Mesh( geometry,material);
+                mesh.position = new THREE.Vector3(0,0,0);
+                scene.add(mesh);
+            }
+
+            function threeStart() {
+                initThree();
+                initCamera();
+                initScene();
+                initLight();
+                initObject();
+                renderer.clear();
+                renderer.render(scene, camera);
+            }
+
+        </script>
+    </head>
+
+    <body onload="threeStart();">
+        <div id="canvas-frame"></div>
+    </body>
+</html>

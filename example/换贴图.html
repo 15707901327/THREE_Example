@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - teapot buffer geometry</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				color: #fff;
+				font-family: Monospace;
+				font-size: 13px;
+				text-align: center;
+				font-weight: bold;
+
+				background-color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+			a { color: #80ffb0; }
+
+		</style>
+	</head>
+	<body>
+
+		<script src="../js/three/three.min.js"></script>
+		<script src='../js/libs/dat.gui.min.js'></script>
+		<script src='../js/geometries/TeapotBufferGeometry.js'></script>
+		<script>
+			var camera, scene, sceneCube, renderer;
+
+			var shading;
+			var phongMaterial, texturedMaterial;
+			var name;
+			var loader;
+
+			var teapot;
+			var url = "textures/UV_Grid_Sm.jpg";
+			//用于控制
+			var effectController = {
+				url:"textures/UV_Grid_Sm.jpg"
+			};
+			var textureMap;
+
+			setupGui();
+			init();
+			render();
+
+			function init() {
+
+				var container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				var canvasWidth = window.innerWidth;
+				var canvasHeight = window.innerHeight;
+
+				// CAMERA
+				camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 1, 80000 );
+				camera.position.set( -600, 550, 1300 );
+
+				// scene itself
+				scene = new THREE.Scene();
+				// LIGHTS
+				var ambientLight = new THREE.AmbientLight( 0x333333 );	// 0.2
+				var light = new THREE.DirectionalLight( 0xFFFFFF, 1.0 );
+				// direction is set in GUI
+				scene.add( ambientLight );
+				scene.add( light );
+
+				// RENDERER
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setClearColor( 0xAAAAAA );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( canvasWidth, canvasHeight );
+				container.appendChild( renderer.domElement );
+
+				// EVENTS
+				window.addEventListener( 'resize', onWindowResize, false );
+
+
+				// 贴图图片
+				loader = new THREE.TextureLoader();
+				textureMap = loader.load(effectController.url,function(){
+					render()
+				});
+				textureMap.wrapS = textureMap.wrapT = THREE.RepeatWrapping;
+
+				textureMap1= loader.load("textures/2088-22532-11.jpg");
+				textureMap1.wrapS = textureMap1.wrapT = THREE.RepeatWrapping;
+
+				// MATERIALS
+				var materialColor = new THREE.Color();
+				materialColor.setRGB( 1.0, 1.0, 1.0 );
+
+				texturedMaterial = new THREE.MeshPhongMaterial( {
+					color: materialColor,
+					map : textureMap,
+					shading: THREE.SmoothShading,
+					side: THREE.DoubleSide
+				} );
+
+				var teapotGeometry = new THREE.TeapotBufferGeometry( 400);
+				teapot = new THREE.Mesh(teapotGeometry,texturedMaterial);
+				scene.add( teapot );
+
+
+			}
+			// EVENT HANDLERS
+			function onWindowResize() {
+				var canvasWidth = window.innerWidth;
+				var canvasHeight = window.innerHeight;
+				renderer.setSize( canvasWidth, canvasHeight );
+			}
+
+			function setupGui() {
+				var gui = new dat.GUI();
+				gui.add( effectController, "url", [ "textures/UV_Grid_Sm.jpg", "textures/2088-22532-11.jpg"] ).name( "URL").onChange(render);
+			}
+
+			function render() {
+				if ( effectController.url != url) {
+					url = effectController.url;
+					textureMap = loader.load(effectController.url,function(){
+						render()
+					});
+					textureMap.wrapS = textureMap.wrapT = THREE.RepeatWrapping;
+					teapot.material.map = textureMap;
+				}
+//				requestAnimationFrame( render );
+				renderer.render( scene, camera );
+			}
+		</script>
+
+	</body>
+</html>

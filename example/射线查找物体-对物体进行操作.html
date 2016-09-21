@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - interactive cubes</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				color: #fff;
+				font-family: Monospace;
+				font-size: 13px;
+				text-align: center;
+				font-weight: bold;
+
+				background-color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			/*.dg {*/
+				/*right: auto!important;*/
+				/*left: 20px!important;*/
+			/*}*/
+		</style>
+	</head>
+	<body>
+
+	    <script src="../js/three/three.min.js"></script>
+		<script src='../js/libs/dat.gui.js'></script>
+		<script>
+
+			var container, stats;
+			var camera, scene, raycaster, renderer;
+
+			var mouse = new THREE.Vector2(), INTERSECTED;
+			var textureMap;
+			var loader;
+			//点击过的物体
+			var mesh;
+			var maps;
+
+			//用于控制
+			var controls;
+
+			setupGui();
+			init();
+			render();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				/**************** 相机 ************************/
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.x = 100;
+				camera.position.y = 100;
+				camera.position.z = 100;
+				camera.lookAt({
+					x:0,
+					y:0,
+					z:0
+				});
+
+				/**************** Scene ************************/
+				scene = new THREE.Scene();
+				var axisHelper = new THREE.AxisHelper( 500 );
+				scene.add( axisHelper );
+
+				/**************** 灯光 ************************/
+				var light = new THREE.DirectionalLight( 0xffffff, 1 );
+				light.position.set( 1, 1, 1 ).normalize();
+				scene.add( light );
+
+
+				/**************** 物体 ************************/
+				// 贴图图片
+				loader = new THREE.TextureLoader();
+				textureMap = loader.load(controls.url,function(texture){
+					render()
+				});
+				textureMap.wrapS = textureMap.wrapT = THREE.RepeatWrapping;
+
+
+				var geometry = new THREE.BoxGeometry( 20, 20, 20 );
+				var object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( {
+					color:0xffffff
+				} ) );
+				object.position.x = 10;
+				object.position.y = 10;
+				object.position.z = 0;
+				object.material.map = textureMap;
+				scene.add( object );
+
+				var geometry = new THREE.BoxGeometry( 20, 20, 20 );
+				var object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( {
+					color:0xffffff
+				} ) );
+				object.position.x = 0;
+				object.position.y = 0;
+				object.position.z = 0;
+				object.material.map = textureMap;
+				scene.add( object );
+
+				/**************** raycaster ************************/
+				raycaster = new THREE.Raycaster();
+
+				/**************** renderer ************************/
+				renderer = new THREE.WebGLRenderer();
+				renderer.setClearColor( 0x000000 );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild(renderer.domElement);
+
+				/**************** 添加事件 ************************/
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+			}
+
+			function render() {
+//				requestAnimationFrame( render );
+				renderer.render( scene, camera );
+			}
+			function setupGui() {
+
+				/**
+				 * maps中存放贴图的名称和贴图的名称 */
+				var maps = {
+					"顺路快递" :{url:"4021-22439-12.jpg"},
+					"版本" :{url:"2750-16227-67.jpg"}
+				};
+				/**
+				 * 回调函数
+				 * 给控制 controls 中的 maps 用*/
+				var createHandler = function( id ) {
+					return function() {
+						//控制物体贴图的转换
+						if(mesh){
+							controls.url = controls.baseUrl + maps[id].url;
+							textureMap = loader.load(controls.url,function(texture){
+								texture.needsUpdate = true;
+								render();
+							});
+							textureMap.wrapS = textureMap.wrapT = THREE.RepeatWrapping;
+							mesh.material.map = textureMap;
+						}
+						render();
+					}
+				};
+				//用于控制
+				controls = new function () {
+					this.baseUrl = "textures/";
+					this.url = "textures/UV_Grid_Sm.jpg";
+					this.show = true;
+					this.map = 1;
+					this.maps = "chrome";
+				};
+
+				var gui = new dat.GUI();
+
+				/** 添加 materials 控制框 **/
+				folderMaterials = gui.addFolder( "Materials" );
+				folderMaterials.add( controls, "map", [ 1,2] ).name( "Map").onChange(translateMap);
+
+				for ( var m in maps ) {
+					controls[ m ] = createHandler( m );
+					folderMaterials.add( controls, m ).name( m );
+				}
+
+				/** 添加 Mesh 控制框 **/
+				folderMesh = gui.addFolder( "Mesh" );
+				folderMesh.add( controls, "show", false ).onChange( hiddenObject );
+
+			}
+
+			/**转换贴图坐标*/
+			function translateMap(e){
+				//控制物体贴图的转换
+				if(mesh){
+					switch(e){
+						case "1" :
+							controls.url = controls.baseUrl + "4021-22439-12.jpg";
+							break;
+						case "2" :
+							controls.url = controls.baseUrl + "2294472375_24a3b8ef46_o.jpg";
+							break;
+					}
+
+					textureMap = loader.load(controls.url,function(texture){
+						render()
+					});
+					textureMap.wrapS = textureMap.wrapT = THREE.RepeatWrapping;
+					mesh.material.map = textureMap;
+				}
+				render();
+			}
+
+			/**鼠标点击事件
+			 * 记录被选中事件*/
+			function onMouseDown(event){
+				mesh = INTERSECTED;
+			}
+
+			/**鼠标移动事件
+			 * 用射线与物体的焦点找到物体*/
+			function onDocumentMouseMove( event ) {
+				event.preventDefault();
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+				raycaster.setFromCamera( mouse, camera );
+				var intersects = raycaster.intersectObjects( scene.children );
+				//抓取到了几个物体
+				if ( intersects.length > 0 ) {
+					//判断抓取物体的类型
+					if(intersects[ 0 ].object.constructor == THREE.Mesh ){
+						if ( INTERSECTED != intersects[ 0 ].object ) {
+							//设置为原有的颜色
+							if ( INTERSECTED ){
+								INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+							}
+							INTERSECTED = intersects[ 0 ].object;
+
+							//获得当前物体的颜色,并存储
+							INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+							INTERSECTED.material.emissive.setHex( 0x5f5f5f );
+							//添加鼠标点击事件
+							document.addEventListener( 'mousedown', onMouseDown, false);
+						}
+					}
+				}else{
+					//设置为原有的颜色
+					if ( INTERSECTED ) {
+						INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+					}
+					INTERSECTED = null;
+					//去掉鼠标点击事件
+					document.removeEventListener( 'mousedown', onMouseDown, false );
+				}
+				render();
+			}
+
+			/**用于隐藏物体*/
+			function hiddenObject(){
+				if(mesh){
+					mesh.visible = controls.show;
+				}
+				render();
+			}
+
+		</script>
+
+	</body>
+</html>

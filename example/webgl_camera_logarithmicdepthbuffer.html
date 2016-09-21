@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - cameras - logarithmic depth buffer</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				color: #808080;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+
+				background-color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			a {
+				color: #0080ff;
+			}
+
+			b { color: lightgreen }
+
+			#stats { position: absolute; top:0; left: 0 }
+
+			.renderer_label {
+				position: absolute;
+				bottom: 1em;
+				width: 100%;
+				color: white;
+				z-index: 10;
+				display: block;
+				text-align: center;
+			}
+			.renderer_label.renderer_label_normal {
+			}
+			.renderer_label.renderer_label_logzbuf {
+			}
+			#container {
+				white-space: nowrap;
+			}
+			#renderer_border {
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				width: 2px;
+				z-index: 10;
+				opacity: .8;
+				background: #ccc;
+				border: 1px inset #ccc;
+				cursor: col-resize;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="container"></div>
+		<script src="three.js-master/build/three.min.js"></script>
+            <script>
+
+			var NEAR = 1e-6, FAR = 1e27;
+
+			var SCREEN_WIDTH = window.innerWidth;
+			var SCREEN_HEIGHT = window.innerHeight;
+
+			var mouse = [.5, .5];
+			var zoompos = -100, minzoomspeed = .015;
+			var zoomspeed = minzoomspeed;
+
+			var container;
+			var objects = {};
+
+			var labeldata = [
+				{ size: 1000,scale: 1.0,label: "medium (1km)", scale: 1 }
+			];
+
+			init();
+
+			function init() {
+
+				container = document.getElementById( 'container' );
+
+				var loader = new THREE.FontLoader();
+				loader.load( 'fonts/helvetiker_regular.typeface.js', function ( font ) {
+					var scene = initScene( font );
+
+					objects.normal = initView( scene,false );
+
+					animate();
+				} );
+
+				//当用户重置窗口大小时添加事件监听
+				window.addEventListener( 'resize', onWindowResize, false );
+				//添加鼠标滑轮事件
+				window.addEventListener( 'mousewheel', onMouseWheel, false );
+				window.addEventListener( 'MozMousePixelScroll', onMouseWheel, false );
+
+				window.addEventListener( 'mousemove', onMouseMove, false );
+
+			}
+
+			function initView( scene,logDepthBuf ) {
+
+				var framecontainer = document.getElementById('container');
+
+				var camera = new THREE.PerspectiveCamera( 50, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR );
+				scene.add(camera);
+
+				var renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: logDepthBuf });
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+				renderer.domElement.style.position = "relative";
+				renderer.domElement.id = 'renderer_' + name;
+				framecontainer.appendChild(renderer.domElement);
+
+				return { container: framecontainer, renderer: renderer, scene: scene, camera: camera }
+
+			}
+
+			function initScene( font ) {
+
+				var scene = new THREE.Scene();
+
+				var light = new THREE.DirectionalLight(0xffffff, 1);
+				light.position.set(100,100,100);
+				scene.add(light);
+
+				var materialargs = {
+					color: 0xffffff,
+					specular: 0x050505,
+					shininess: 50,
+					shading: THREE.SmoothShading,
+					emissive: 0x000000
+				};
+
+				var meshes = [];
+				var coloroffset = 0;
+				var colorskip = ['black', 'antiquewhite', 'bisque', 'beige', 'blanchedalmond', 'darkblue', 'darkcyan'];
+				var colorkeys = Object.keys( THREE.ColorKeywords );
+
+				var geometry = new THREE.SphereBufferGeometry(0.5, 24, 12);
+
+				for (var i = 0; i < labeldata.length; i++) {
+					var scale = labeldata[i].scale || 1;
+					var labelgeo = new THREE.TextGeometry( labeldata[i].label, {
+						font: font,
+						size: labeldata[i].size,
+						height: labeldata[i].size / 2,
+					} );
+
+					labelgeo.computeBoundingSphere();
+
+					// center text
+					labelgeo.translate( - labelgeo.boundingSphere.radius, 0, 0 );
+
+					// Pick a color at "random".  Exclude black, because it looks bad.
+					while ( colorskip.indexOf( colorkeys[ i + coloroffset ] ) != -1 ) {
+						coloroffset++;
+					}
+					materialargs.color = THREE.ColorKeywords[ colorkeys[ i + coloroffset ] ];
+
+					var material = new THREE.MeshPhongMaterial( materialargs );
+
+					var group = new THREE.Group();
+					group.position.z = -labeldata[i].size * scale;
+					scene.add(group);
+
+					var textmesh = new THREE.Mesh( labelgeo, material );
+					textmesh.scale.set(scale, scale, scale);
+					textmesh.position.z = -labeldata[i].size * scale;
+					textmesh.position.y = labeldata[i].size / 4 * scale;
+					group.add(textmesh);
+
+					var dotmesh = new THREE.Mesh(geometry, material);
+					dotmesh.position.y = -labeldata[i].size / 4 * scale;
+					dotmesh.scale.multiplyScalar(labeldata[i].size * scale);
+					group.add(dotmesh);
+
+				}
+
+				return scene;
+
+			}
+
+			function updateRendererSizes() {
+
+				// Recalculate size for both renderers when screen size or split location changes
+
+				SCREEN_WIDTH = window.innerWidth;
+				SCREEN_HEIGHT = window.innerHeight;
+
+				objects.normal.renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT );
+				objects.normal.camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+				objects.normal.camera.updateProjectionMatrix();
+
+			}
+
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+
+			}
+
+			function render() {
+
+				// Put some limits on zooming
+				var minzoom = labeldata[0].size * labeldata[0].scale*1;
+				var maxzoom = labeldata[labeldata.length-1].size * labeldata[labeldata.length-1].scale * 100;
+				var damping = (Math.abs(zoomspeed) > minzoomspeed ? .95 : 1.0);
+
+				// Zoom out faster the further out you go
+				var zoom = THREE.Math.clamp(Math.pow(Math.E, zoompos), minzoom, maxzoom);
+				zoompos = Math.log(zoom);
+
+				zoompos += zoomspeed;
+				zoomspeed *= damping;
+
+				objects.normal.camera.position.x = Math.sin(.5 * Math.PI * (mouse[0] - .5)) * zoom;
+				objects.normal.camera.position.y = Math.sin(.25 * Math.PI * (mouse[1] - .5)) * zoom;
+				objects.normal.camera.position.z = Math.cos(.5 * Math.PI * (mouse[0] - .5)) * zoom;
+				objects.normal.camera.lookAt(objects.normal.scene.position);
+
+				objects.normal.renderer.render(objects.normal.scene, objects.normal.camera);
+			}
+
+			function onWindowResize(event) {
+				updateRendererSizes();
+			}
+
+			function onBorderMouseDown(ev) {
+				// activate draggable window resizing bar
+				window.addEventListener("mousemove", onBorderMouseMove);
+				window.addEventListener("mouseup", onBorderMouseUp);
+				ev.stopPropagation();
+				ev.preventDefault();
+			}
+			function onBorderMouseMove(ev) {
+				ev.stopPropagation();
+			}
+			function onBorderMouseUp(ev) {
+				window.removeEventListener("mousemove", onBorderMouseMove);
+				window.removeEventListener("mouseup", onBorderMouseUp);
+			}
+			function onMouseMove(ev) {
+				mouse[0] = ev.clientX / window.innerWidth;
+				mouse[1] = ev.clientY / window.innerHeight;
+			}
+			function onMouseWheel(ev) {
+				var amount = -ev.wheelDeltaY || ev.detail;
+				if ( amount === 0 ) return;
+				var dir = amount / Math.abs(amount);
+				zoomspeed = dir/10;
+			}
+		</script>
+	</body>
+</html>

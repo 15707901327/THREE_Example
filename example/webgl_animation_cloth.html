@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - cloth simulation</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #000;
+				color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+		</style>
+	</head>
+
+	<body>
+		<script src="../js/three/three.min.js"></script>
+
+		<script>
+
+			var container;
+			var camera, scene, renderer;
+
+			var clothGeometry;
+			var sphere;
+			var object;
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				// scene
+				scene = new THREE.Scene();
+
+				// camera
+				camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.x = 41.7842;
+				camera.position.y = 1200;
+				camera.position.z = 1817.75;
+				scene.add( camera );
+
+				// lights
+				var light;
+
+				var color = new THREE.Color();
+
+				color.setRGB(200,190,180);
+				light = new THREE.PointLight(color.getHex ());
+				light.lookAt(-180,900,160);
+				light.position.set(-180,1400,160);
+				light.decay = 500;
+				scene.add(light);
+
+				color.setRGB(61,132,250);
+				light = new THREE.SpotLight(color.getHex ());
+				light.lookAt(-340,1550,-1200);
+				light.position.set(-340,1550,-2400);
+				light.decay = 1200;
+				scene.add(light);
+
+				/*******************************************************************/
+				var loader = new THREE.TextureLoader();
+				var clothTexture = loader.load( 'img/textures/2088-22532-11.jpg' );
+				var clothMaterial = new THREE.MeshPhongMaterial( {
+					map: clothTexture,
+					alphaTest: 0,
+					side : THREE.DoubleSide,
+					color: 0xFFFFFF
+				} );
+
+				geometry = new THREE.Geometry();
+
+				var vertices = [];
+
+				vertices.push(new THREE.Vector3(1820,0,-2340));
+				vertices.push(new THREE.Vector3(1820,0,2660));
+				vertices.push(new THREE.Vector3(-2180,0,2660));
+				vertices.push(new THREE.Vector3(-2180,0,-2340));
+
+				geometry.vertices = vertices;
+
+				var faces = [];
+				faces.push(new THREE.Face3(1,2,3));
+				faces.push(new THREE.Face3(0,1,3));
+				geometry.faces = faces;
+
+				geometry.computeBoundingSphere();
+
+				mesh = new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({
+					color : 0xffffDD
+				}));
+
+				mesh.position.set();
+
+				mesh.rotation.x = 0;
+				mesh.rotation.y = 0;
+				mesh.rotation.z = 0;
+				scene.add(mesh);
+
+                //画一条直线
+//                var geometry = new THREE.Geometry();
+//                var material = new THREE.LineBasicMaterial({ vertexColors: true });
+//                var color1 = new THREE.Color(0x444444), color2 = new THREE.Color(0xFF0000);
+//
+//                // 线的材质可以由2点的颜色决定
+//                var p1 = new THREE.Vector3(-100, 0, 1000);
+//                var p2 = new THREE.Vector3(1000, 0, -1000);
+//                geometry.vertices.push(p1);
+//                geometry.vertices.push(p2);
+//                geometry.colors.push(color1, color2);
+//
+//                var line = new THREE.Line(geometry, material, THREE.LinePieces);
+//                scene.add(line);
+
+                /*******************************************************************/
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setClearColor(0xFFFFFF, 1.0);
+
+				container.appendChild( renderer.domElement );
+
+			}
+
+			function animate() {
+				requestAnimationFrame( animate );
+				renderer.render( scene, camera );
+			}
+
+		</script>
+	</body>
+</html>
+//
+//                        var vertices = [];
+//                        vertices.push(new THREE.Vector3(1820,0,-2340));
+//                        vertices.push(new THREE.Vector3(1820,0,2660));
+//                        vertices.push(new THREE.Vector3(-2180,0,2660));
+//                        vertices.push(new THREE.Vector3(-2180,0,-2340));
+//                        geometry.vertices = vertices;
+//                        geometry.vertices[0].uv = new THREE.Vector2(0,0);
+//                        geometry.vertices[1].uv = new THREE.Vector2(0,-1);
+//                        geometry.vertices[2].uv = new THREE.Vector2(1,-1);
+//                        geometry.vertices[3].uv = new THREE.Vector2(1,0);
+//
+//                        var faces = [];
+//                        var face = new THREE.Face3(1,3,2);
+//                        faces.push(face);
+//                        faces.push(new THREE.Face3(0,3,1));
+//                        geometry.faces = faces;
+//
+//                        geometry.computeBoundingSphere();
+//
+//                        mesh = new THREE.Mesh(geometry,clothMaterial);
+//                        scene.add(mesh);
+//
+//                        /************ 顶面2 ************/
+//                        geometry = new THREE.BoxGeometry(4000,0,5000);
+//
+//                        var clothTexture = loader.load( 'img/textures/2088-22532-11.jpg' );
+//                        var clothMaterial = new THREE.MeshPhongMaterial( {
+////                            map:clothTexture,
+//                            emissiveMap:clothTexture,
+//                            alphaTest: 0.5,
+//                            side : THREE.DoubleSide
+//                        } );
+//                        clothMaterial.color = new THREE.Color(0x00FFff);
+//                        clothMaterial.specular = new THREE.Color(0x00FF00);
+//                        clothMaterial.shininess = 10;
+//                        clothMaterial.emissive = new THREE.Color(0xFFFFFF);
+//
+//                        var vertices = [];
+//                        vertices.push(new THREE.Vector3(1820,0,-2340));
+//                        vertices.push(new THREE.Vector3(1820,0,2660));
+//                        vertices.push(new THREE.Vector3(-2180,0,2660));
+//                        vertices.push(new THREE.Vector3(-2180,0,-2340));
+//                        geometry.vertices = vertices;
+//                        geometry.vertices[0].uv = new THREE.Vector2(0,0);
+//                        geometry.vertices[1].uv = new THREE.Vector2(0,1);
+//                        geometry.vertices[2].uv = new THREE.Vector2(1,1);
+//                        geometry.vertices[3].uv = new THREE.Vector2(1,0);
+//
+//                        var faces = [];
+//                        var face = new THREE.Face3(1,2,3);
+//                        faces.push(face);
+//                        faces.push(new THREE.Face3(0,1,3));
+//                        geometry.faces = faces;
+//
+//                        geometry.computeBoundingSphere();
+//
+//                        mesh = new THREE.Mesh(geometry,clothMaterial);
+//                        mesh.position.set(0,2800,0);
+//                        scene.add(mesh);
+//
+//                        /************ 顶面2 ************/
+//                        geometry = new THREE.BoxGeometry(4000,2800,0);
+//
+//                        var clothTexture = loader.load( 'img/textures/2088-22532-11.jpg' );
+//                        var clothMaterial = new THREE.MeshPhongMaterial( {
+//                            map:clothTexture,
+//                            emissiveMap:clothTexture,
+//                            alphaTest: 0.5,
+//                            side : THREE.DoubleSide
+//                        } );
+//                        clothMaterial.color = new THREE.Color(0x00FFff);
+//                        clothMaterial.specular = new THREE.Color(0x00FF00);
+//                        clothMaterial.shininess = 10;
+//                        clothMaterial.emissive = new THREE.Color(0xFFFFFF);
+//
+//                        var vertices = [];
+//                        vertices.push(new THREE.Vector3(2000,0,0));
+//                        vertices.push(new THREE.Vector3(2000,1400,0));
+//                        vertices.push(new THREE.Vector3(2000,2800,0));
+//                        vertices.push(new THREE.Vector3(1000,2800,0));
+//                        vertices.push(new THREE.Vector3(0,2800,0));
+//                        vertices.push(new THREE.Vector3(-1000,2800,0));
+//                        vertices.push(new THREE.Vector3(-2000,2800,0));
+//                        vertices.push(new THREE.Vector3(-2000,1400,0));
+//                        vertices.push(new THREE.Vector3(-2000,0,0));
+//                        vertices.push(new THREE.Vector3(-1000,0,0));
+//                        vertices.push(new THREE.Vector3(0,0,0));
+//                        vertices.push(new THREE.Vector3(1000,0,0));
+//                        vertices.push(new THREE.Vector3(960,800,0));
+//                        vertices.push(new THREE.Vector3(960,1300,0));
+//                        vertices.push(new THREE.Vector3(960,1800,0));
+//                        vertices.push(new THREE.Vector3(960,2300,0));
+//                        vertices.push(new THREE.Vector3(560,2300,0));
+//                        vertices.push(new THREE.Vector3(160,2300,0));
+//                        vertices.push(new THREE.Vector3(-240,2300,0));
+//                        vertices.push(new THREE.Vector3(-640,2300,0));
+//                        vertices.push(new THREE.Vector3(-640,1800,0));
+//                        vertices.push(new THREE.Vector3(-640,1300,0));
+//                        vertices.push(new THREE.Vector3(-640,800,0));
+//                        vertices.push(new THREE.Vector3(-240,800,0));
+//                        vertices.push(new THREE.Vector3(160,800,0));
+//                        vertices.push(new THREE.Vector3(560,800,0));
+//                        geometry.vertices = vertices;
+//
+//                        geometry.vertices[0].uv = new THREE.Vector2(0,1);
+//                        geometry.vertices[1].uv = new THREE.Vector2(0,0.5);
+//                        geometry.vertices[2].uv = new THREE.Vector2(0,0);
+//                        geometry.vertices[3].uv = new THREE.Vector2(0.25,0);
+//
+//                        geometry.vertices[4].uv = new THREE.Vector2(0.5,0);
+//                        geometry.vertices[5].uv = new THREE.Vector2(0.75,0);
+//                        geometry.vertices[6].uv = new THREE.Vector2(1,0);
+//                        geometry.vertices[7].uv = new THREE.Vector2(1,0.5);
+//
+//                        geometry.vertices[8].uv = new THREE.Vector2(1,1);
+//                        geometry.vertices[9].uv = new THREE.Vector2(0.75,1);
+//                        geometry.vertices[10].uv = new THREE.Vector2(0.5,1);
+//                        geometry.vertices[11].uv = new THREE.Vector2(0.25,1);
+//
+//                        geometry.vertices[12].uv = new THREE.Vector2(0.26,0.714286);
+//                        geometry.vertices[13].uv = new THREE.Vector2(0.26,0.535714);
+//                        geometry.vertices[14].uv = new THREE.Vector2(0.26,0.357143);
+//                        geometry.vertices[15].uv = new THREE.Vector2(0.26,0.178571);
+//
+//                        geometry.vertices[16].uv = new THREE.Vector2(0.36,0.178571);
+//                        geometry.vertices[17].uv = new THREE.Vector2(0.46,0.178571);
+//                        geometry.vertices[18].uv = new THREE.Vector2(0.56,0.178571);
+//                        geometry.vertices[19].uv = new THREE.Vector2(0.66,0.178571);
+//
+//                        geometry.vertices[20].uv = new THREE.Vector2(0.66,0.357143);
+//                        geometry.vertices[21].uv = new THREE.Vector2(0.66,0.535714);
+//                        geometry.vertices[22].uv = new THREE.Vector2(0.66,0.714286);
+//                        geometry.vertices[23].uv = new THREE.Vector2(0.56,0.714286);
+//
+//                        geometry.vertices[24].uv = new THREE.Vector2(0.46,0.714286);
+//                        geometry.vertices[25].uv = new THREE.Vector2(0.36,0.714286);
+//
+//
+//                        var faces = [];
+//                       faces.push(new THREE.Face3(5,6,7));
+//                       faces.push(new THREE.Face3(11,12,25));
+//                       faces.push(new THREE.Face3(24,10,25));
+//                       faces.push(new THREE.Face3(18,4,19));
+//                       faces.push(new THREE.Face3(10,11,25));
+//                       faces.push(new THREE.Face3(23,10,24));
+//                       faces.push(new THREE.Face3(7,8,9));
+//                       faces.push(new THREE.Face3(2,3,15));
+//                       faces.push(new THREE.Face3(11,0,12));
+//                       faces.push(new THREE.Face3(0,1,12));
+//                       faces.push(new THREE.Face3(21,7,22));
+//                       faces.push(new THREE.Face3(20,7,21));
+//                       faces.push(new THREE.Face3(9,10,22));
+//                       faces.push(new THREE.Face3(7,9,22));
+//                       faces.push(new THREE.Face3(14,1,15));
+//                       faces.push(new THREE.Face3(1,2,15));
+//                       faces.push(new THREE.Face3(13,1,14));
+//                       faces.push(new THREE.Face3(12,1,13));
+//                       faces.push(new THREE.Face3(15,3,16));
+//                       faces.push(new THREE.Face3(3,4,16));
+//                       faces.push(new THREE.Face3(16,4,17));
+//                       faces.push(new THREE.Face3(22,10,23));
+//                       faces.push(new THREE.Face3(17,4,18));
+//                       faces.push(new THREE.Face3(4,5,19));
+//                       faces.push(new THREE.Face3(5,7,19));
+//                       faces.push(new THREE.Face3(19,7,20));
+//                        geometry.faces = faces;
+//
+//                        geometry.computeBoundingSphere();
+//
+//                        mesh = new THREE.Mesh(geometry,clothMaterial);
+//                        mesh.position.set(-180,0,-2340);
+//                        scene.add(mesh);

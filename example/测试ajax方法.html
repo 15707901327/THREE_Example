@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="../js/JQuery/jquery-1.7.js"></script>
+    <script type="text/javascript">
+
+        function  x(){
+            $("button").click(function(){
+//                $("div").load("/example/jquery/demo_ajax_load.txt");
+                $.ajax({
+                    url : "/example/jquery/demo_ajax_load.txt",
+                    success : function(){
+
+                    }
+                });
+            });
+        }
+        $(function(){
+            $(document).ajaxStart(function(){
+                alert("所有 AJAX 请求已开始");
+            });
+            $(document).ajaxStop(function(){
+                alert("所有 AJAX 请求已完成");
+            });
+
+            x();
+        });
+    </script>
+</head>
+
+<body>
+
+<div id="txt"><h2>通过 AJAX 改变文本</h2></div>
+<button>改变内容</button>
+
+</body>
+</html>

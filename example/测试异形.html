@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - geometry - extrude shapes</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #222;
+				margin: 0px;
+				overflow: hidden;
+			}
+			a {
+				color: #f80;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<script src="../js/three/three.min.js"></script>
+		<script src="../js/controls/TrackballControls.js"></script>
+
+		<script>
+
+			var container;
+
+			var camera, scene, renderer, controls;
+
+			init();
+			animate();
+
+			function init() {
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setClearColor( 0x222222 );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				scene = new THREE.Scene();
+
+				//camera
+				camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 1, 1000 );
+				//-2192.05,-142.606,1200
+				camera.position.set( 0, 300, 500 );
+
+				scene.add( new THREE.AmbientLight( 0x222222 ) );
+
+				var light = new THREE.PointLight( 0xffffff );
+				light.position.copy( camera.position );
+				scene.add( light );
+				
+				/************************************************************************************************************/
+				var pts = [];
+				pts.push(new THREE.Vector2(56.1667,48.6867));
+				pts.push(new THREE.Vector2(57.4751,43.014));
+				pts.push(new THREE.Vector2(59.5054,37.5574));
+				pts.push(new THREE.Vector2(62.2237,32.4084));
+				pts.push(new THREE.Vector2(65.5843,27.6531));
+				pts.push(new THREE.Vector2(69.5311,23.371));
+				pts.push(new THREE.Vector2(73.9981,19.6338));
+				pts.push(new THREE.Vector2(78.9105,16.504));
+				pts.push(new THREE.Vector2(84.1861,14.0339));
+				pts.push(new THREE.Vector2(89.7366,12.265));
+				pts.push(new THREE.Vector2(92.7664,11.6508));
+				pts.push(new THREE.Vector2(93.5204,11.3517));
+				pts.push(new THREE.Vector2(94.2282,10.9557));
+				pts.push(new THREE.Vector2(94.8775,10.4696));
+				pts.push(new THREE.Vector2(95.4567,9.90214));
+				pts.push(new THREE.Vector2(95.9559,9.26313));
+				pts.push(new THREE.Vector2(96.3661,8.56381));
+				pts.push(new THREE.Vector2(96.6802,7.81646));
+				pts.push(new THREE.Vector2(96.8928,7.03417));
+				pts.push(new THREE.Vector2(97,6.23069));
+				pts.push(new THREE.Vector2(97,5.42009));
+				pts.push(new THREE.Vector2(96.8928,4.6166));
+				pts.push(new THREE.Vector2(96.6802,3.83432));
+				pts.push(new THREE.Vector2(96.3661,3.08696));
+				pts.push(new THREE.Vector2(95.9559,2.38764));
+				pts.push(new THREE.Vector2(95.4567,1.74863));
+				pts.push(new THREE.Vector2(94.8775,1.18114));
+				pts.push(new THREE.Vector2(94.2282,0.695112));
+				pts.push(new THREE.Vector2(93.5204,0.299084));
+				pts.push(new THREE.Vector2(92.7664,0));
+				pts.push(new THREE.Vector2(79.0624,0));
+				pts.push(new THREE.Vector2(0.0290899,79.4707));
+				pts.push(new THREE.Vector2(0.0246454,79.4755));
+				pts.push(new THREE.Vector2(0.0205212,79.4806));
+				pts.push(new THREE.Vector2(0.0167352,79.4859));
+				pts.push(new THREE.Vector2(0.0133035,79.4914));
+				pts.push(new THREE.Vector2(0.0102401,79.4972));
+				pts.push(new THREE.Vector2(0.00755796,79.5031));
+				pts.push(new THREE.Vector2(0.00526916,79.5092));
+				pts.push(new THREE.Vector2(0.00338267,79.5155));
+				pts.push(new THREE.Vector2(0.0019075,79.5218));
+				pts.push(new THREE.Vector2(0.00084967,79.5282));
+				pts.push(new THREE.Vector2(0.000212167,79.5347));
+				pts.push(new THREE.Vector2(0,79.5412));
+				pts.push(new THREE.Vector2(0,81));
+				pts.push(new THREE.Vector2(24.0189,81));
+				pts.push(new THREE.Vector2(24.0626,80.3477));
+				pts.push(new THREE.Vector2(24.1909,79.7066));
+				pts.push(new THREE.Vector2(24.4017,79.0877));
+				pts.push(new THREE.Vector2(24.6915,78.5015));
+				pts.push(new THREE.Vector2(25.0552,77.958));
+				pts.push(new THREE.Vector2(25.4866,77.4665));
+				pts.push(new THREE.Vector2(25.9785,77.0354));
+				pts.push(new THREE.Vector2(26.5224,76.672));
+				pts.push(new THREE.Vector2(27.1091,76.3825));
+				pts.push(new THREE.Vector2(27.7285,76.1718));
+				pts.push(new THREE.Vector2(28.3701,76.0436));
+				pts.push(new THREE.Vector2(29.0229,76));
+				pts.push(new THREE.Vector2(32.5492,76));
+				pts.push(new THREE.Vector2(32.9409,75.9738));
+				pts.push(new THREE.Vector2(33.3259,75.8969));
+				pts.push(new THREE.Vector2(33.6975,75.7705));
+				pts.push(new THREE.Vector2(34.0495,75.5968));
+				pts.push(new THREE.Vector2(34.3758,75.3788));
+				pts.push(new THREE.Vector2(34.671,75.1201));
+				pts.push(new THREE.Vector2(34.9298,74.8252));
+				pts.push(new THREE.Vector2(35.1481,74.4991));
+				pts.push(new THREE.Vector2(35.3219,74.1474));
+				pts.push(new THREE.Vector2(35.4484,73.776));
+				pts.push(new THREE.Vector2(35.5254,73.3914));
+				pts.push(new THREE.Vector2(35.5516,73));
+				pts.push(new THREE.Vector2(35.5516,69.5147));
+				pts.push(new THREE.Vector2(35.5778,69.1233));
+				pts.push(new THREE.Vector2(35.6547,68.7387));
+				pts.push(new THREE.Vector2(35.7812,68.3673));
+				pts.push(new THREE.Vector2(35.9551,68.0156));
+				pts.push(new THREE.Vector2(36.1733,67.6895));
+				pts.push(new THREE.Vector2(36.4322,67.3946));
+				pts.push(new THREE.Vector2(36.7273,67.1359));
+				pts.push(new THREE.Vector2(37.0536,66.9179));
+				pts.push(new THREE.Vector2(37.4056,66.7442));
+				pts.push(new THREE.Vector2(37.7773,66.6178));
+				pts.push(new THREE.Vector2(38.1622,66.5409));
+				pts.push(new THREE.Vector2(38.5539,66.5147));
+				pts.push(new THREE.Vector2(41.2194,66.5147));
+				pts.push(new THREE.Vector2(41.2194,60.5649));
+				pts.push(new THREE.Vector2(42.1727,60.6035));
+				pts.push(new THREE.Vector2(43.1264,60.5773));
+				pts.push(new THREE.Vector2(45.0174,60.3318));
+				pts.push(new THREE.Vector2(46.8579,59.833));
+				pts.push(new THREE.Vector2(48.6139,59.0901));
+				pts.push(new THREE.Vector2(50.2533,58.1166));
+				pts.push(new THREE.Vector2(51.7458,56.9306));
+				pts.push(new THREE.Vector2(53.064,55.5537));
+				pts.push(new THREE.Vector2(54.1837,54.0113));
+				pts.push(new THREE.Vector2(55.0844,52.3318));
+				pts.push(new THREE.Vector2(55.7495,50.546));
+				pts.push(new THREE.Vector2(56.1667,48.6867));
+
+				//贴图
+				var loader = new THREE.TextureLoader();
+				var texture = loader.load("textures/4021-22439-12.jpg");
+
+				var randomPoints = [];
+				randomPoints.push( new THREE.Vector3(0,0,0) );
+				randomPoints.push( new THREE.Vector3(0,0,550) );
+				randomPoints.push( new THREE.Vector3(1334,0,550) );
+				randomPoints.push( new THREE.Vector3(1334,0,0) );
+
+				var randomSpline =  new THREE.CatmullRomCurve3( randomPoints );
+
+				//材料
+				var materials = [];
+				var material = new THREE.MeshPhongMaterial( {
+					alphaTest: 0,
+            		shininess: 10,
+					map : texture
+				} );
+				var material2 = new THREE.MeshLambertMaterial( { color: 0xb00000, wireframe: false } );
+				materials.push(material);
+				materials.push(material2);
+//
+				var shape = new THREE.Shape( pts );
+				var extrudeSettings = {
+					material : 0,
+					extrudeMaterial : 1,
+					extrudePath		: randomSpline
+				};
+				var geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
+				var mesh = new THREE.Mesh( geometry, material );
+//        var mesh = new THREE.SceneUtils.createMultiMaterialObject(geometry,materials);
+				mesh.position.set(0,0,0);
+				scene.add( mesh );
+				/***************************************************************************************************************/
+			}
+
+			function animate() {
+				requestAnimationFrame( animate );
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+
+</html>

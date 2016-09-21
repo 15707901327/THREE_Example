@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - convex geometry</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<script src="three.js-master/build/three.min.js"></script>
+		<script src="../js/ConvexGeometry.js"></script>
+		<script>
+
+			var container;
+
+			var camera, scene, renderer;
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				// scene
+				scene = new THREE.Scene();
+
+				// camera
+				camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.x = 41.7842;
+				camera.position.y = 1200;
+				camera.position.z = 1817.75;
+				scene.add( camera );
+
+				// lights
+				var light;
+
+				var color = new THREE.Color();
+
+				color.setRGB(200,190,180);
+				light = new THREE.PointLight(color.getHex ());
+				light.lookAt(-180,900,160);
+				light.position.set(-180,1400,160);
+				light.decay = 500;
+				scene.add(light);
+
+				color.setRGB(61,132,250);
+				light = new THREE.SpotLight(color.getHex ());
+				light.lookAt(-340,1550,-1200);
+				light.position.set(-340,1550,-2400);
+				light.decay = 1200;
+				scene.add(light);
+     			/***********************************************************************/
+
+				var map = new THREE.TextureLoader().load( 'img/textures/UV_Grid_Sm.jpg' );
+				map.wrapS = map.wrapT = THREE.RepeatWrapping;
+				map.anisotropy = 16;
+
+				materials = [
+					new THREE.MeshPhongMaterial( {
+						map: map,
+						alphaTest: 0,
+						side : THREE.DoubleSide
+						} ),
+					new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true, transparent: true, opacity: 0.1 } )
+				];
+
+
+				// cube
+
+				var points = [
+					new THREE.Vector3( 500, 500, 500 ),
+					new THREE.Vector3( 500, 500, -500 ),
+					new THREE.Vector3( -500,500, -500 ),
+					new THREE.Vector3( -500,500, 500 ),
+					new THREE.Vector3( 500, 0, 500 ),
+					new THREE.Vector3( 500, 0, -500 ),
+					new THREE.Vector3( -500, 0, -500 ),
+					new THREE.Vector3( -500, 0, 500 ),
+				];
+
+				object = THREE.SceneUtils.createMultiMaterialObject( new THREE.ConvexGeometry( points ), materials );
+				object.position.set( 400, 0, -100 );
+				scene.add( object );
+
+				object = new THREE.ArrowHelper( new THREE.Vector3( 0, 1, 0 ), new THREE.Vector3( 0, 0, 0 ), 500 );
+				object.position.set( 200, 0, 400 );
+				scene.add( object );
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+			}
+
+			function animate() {
+				requestAnimationFrame( animate );
+				renderer.render( scene, camera );
+			}
+		</script>
+
+	</body>
+</html>

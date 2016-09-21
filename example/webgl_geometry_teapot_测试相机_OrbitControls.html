@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - teapot buffer geometry</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				color: #fff;
+				font-family: Monospace;
+				font-size: 13px;
+				text-align: center;
+				font-weight: bold;
+
+				background-color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			a { color: blue; }
+
+		</style>
+	</head>
+	<body>
+
+		<script src="../js/three/three.min.js"></script>
+
+		<script src="../js/controls/OrbitControls.js"></script>
+
+		<script src='../js/geometries/TeapotBufferGeometry.js'></script>
+
+		<script>
+
+			var camera, scene, sceneCube, renderer;
+			var cameraControls;
+			var effectController;
+			var teapotSize = 400;
+			var ambientLight, light;
+			var skybox;
+
+			var tess = -1;	// force initialization
+			var bBottom ;
+			var bLid;
+			var bBody;
+			var bFitLid;
+			var bNonBlinn;
+			var shading;
+			var wireMaterial, flatMaterial, gouraudMaterial, phongMaterial, texturedMaterial, reflectiveMaterial;
+
+			var teapot;
+
+			// allocate these just once
+			var diffuseColor = new THREE.Color();
+			var specularColor = new THREE.Color();
+
+			init();
+			render();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				var canvasWidth = window.innerWidth;
+				var canvasHeight = window.innerHeight;
+
+				/******************************* 生成场景 *************************************************/
+				scene = new THREE.Scene();
+
+				/******************************* 添加相机 *************************************************/
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 80000 );
+				camera.position.set( -600, 550, 1300 );
+
+				/******************************* 添加灯光 *************************************************/
+				ambientLight = new THREE.AmbientLight( 0x333333 );	// 0.2
+				light = new THREE.DirectionalLight( 0xFFFFFF, 1.0 );
+				scene.add( ambientLight );
+				scene.add( light );
+
+				/******************************* 场景渲染 *************************************************/
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setClearColor( 0xAAAAAA );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( canvasWidth, canvasHeight );
+				renderer.gammaInput = true;
+				renderer.gammaOutput = true;
+				container.appendChild( renderer.domElement );
+
+				/******************************* 添加物体 *************************************************/
+				var teapotGeometry = new THREE.TeapotBufferGeometry( teapotSize,tess,true,true, true,true,true);
+
+				var path = "textures/cube/skybox/";
+				var urls = [
+					path + "px.jpg", path + "nx.jpg",
+					path + "py.jpg", path + "ny.jpg",
+					path + "pz.jpg", path + "nz.jpg"
+				];
+				var textureCube = new THREE.CubeTextureLoader().load( urls );
+
+				reflectiveMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, envMap: textureCube} );
+
+				teapot = new THREE.Mesh(teapotGeometry,reflectiveMaterial );
+				scene.add( teapot );
+
+				/******************************* 添加控制相机 *************************************************/
+				cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+				cameraControls.target.set( 0, 0, 0 );
+				cameraControls.addEventListener( 'change', render );
+
+				/******************************* 添加控制事件 *************************************************/
+				// EVENTS
+				window.addEventListener( 'resize', onWindowResize, false );
+			}
+
+			// EVENT HANDLERS
+
+			function onWindowResize() {
+
+				var canvasWidth = window.innerWidth;
+				var canvasHeight = window.innerHeight;
+
+				renderer.setSize( canvasWidth, canvasHeight );
+
+				camera.aspect = canvasWidth / canvasHeight;
+				camera.updateProjectionMatrix();
+				render();
+			}
+
+			function render() {
+				renderer.render( scene, camera );
+			}
+
+		</script>
+
+	</body>
+</html>

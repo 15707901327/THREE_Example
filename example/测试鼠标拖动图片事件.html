@@ -1,0 +1,30 @@
+<!DOCTYPE>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>无标题文档</title>
+    <script type="text/javascript" src="../js/JQuery/jquery-1.7.js"></script>
+    <script type="text/javascript">
+        $(function(){
+            $("html").mousemove(function(e){
+                $("#a").css("left",e.pageX).css("top",e.pageY);
+            });
+        });
+    </script>
+    <style type="text/css">
+        .a {
+            width:200px;
+            height:100px;
+            position:absolute;
+            background-color:rgb(0,0,0);
+        }
+    </style>
+</head>
+<body>
+
+<img src="../img/textures/2088-22532-11.jpg" id="a" name="a" class="a" >
+
+只做了一个简单的实例
+</body>
+
+</html>
